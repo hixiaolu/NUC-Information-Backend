@@ -27,6 +27,7 @@ def handle_balance():
     passwd = request.args.get('passwd', '')
     time_now = datetime.now(cst_tz)
     cookies = login(name, passwd, all_cookies=False)
+    balance = session.get(odd_fare_url, cookies=cookies).json()['data']['oddfare']
     return {
         'code': 0,
         'data': {
@@ -37,6 +38,6 @@ def handle_balance():
 
 
 @api.route('/balance/<string:name>', methods=['GET'])
-def temp(name: str):
+def handle_balance_temp(name: str):
     custom_abort(-1, "服务器升级中")
     pass

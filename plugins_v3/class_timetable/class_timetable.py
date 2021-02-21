@@ -27,7 +27,7 @@ def handle_class_timetable(class_name: str):
         custom_abort(-6, '查询失败')
     post_data = {
         'xnm': '2020',
-        'xqm': '3',
+        'xqm': '12',
         'xqh_id': '01',
         'njdm_id': '',
         'jg_id': '',
@@ -42,7 +42,7 @@ def handle_class_timetable(class_name: str):
         custom_abort(-6, '无效的班级号')
     post_data = {
         'xnm': '2020',
-        'xqm': '3',
+        'xqm': '12',
         'xnmc': '2020-2021',
         'xqmmc': '1',
         'xqh_id': '01',

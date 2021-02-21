@@ -4,7 +4,7 @@ import logging
 from functools import wraps
 from urllib.parse import unquote
 
-from flask import request
+from flask import request, g
 
 from utils.redis_connections import redis_cache
 
@@ -30,10 +30,13 @@ def cache(cache_args: set, expire: int = 600):
             cache_key_md5 = hashlib.md5(cache_key.encode()).hexdigest()
             cached = redis_cache.get(cache_key_md5)
             if cached:
+                g.values['cached'] = True
+                g.values['code'] = 0
                 logging.info("命中缓存 %s", unquote(cache_key))
                 return json.loads(cached)
             else:
                 res: dict = f(*args, **kwargs)
+                g.values['code'] = res.get('code', -1)
                 if res.get('code', -1) == 0:
                     redis_cache.set(cache_key_md5, json.dumps(res), ex=expire)
                     logging.info("缓存 %s", unquote(cache_key))

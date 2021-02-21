@@ -24,7 +24,7 @@ def handle_timetable():
     cookies = login(name, passwd)
     post_data = {
         'xnm': 2020,
-        'xqm': 3
+        'xqm': 12
     }
     timetable = session.post(config.timetable_url, data=post_data, cookies=cookies).json()
     return {

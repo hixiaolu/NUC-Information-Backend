@@ -2,6 +2,7 @@ import pickle
 import re
 
 import execjs
+import requests
 from requests import Response
 from requests.cookies import RequestsCookieJar
 
@@ -9,9 +10,6 @@ from plugins_v3._login import config
 from utils.exceptions import custom_abort
 from utils.redis_connections import redis_session
 from utils.session import session
-
-with open('plugins_v3/_login/rsa.js') as f:  # 执行 JS 文件
-    js_ctx = execjs.compile(f.read())
 
 
 def follow_link(cookies: RequestsCookieJar, url: str) -> (Response, RequestsCookieJar):
@@ -29,13 +27,18 @@ def login(name: str, passwd: str, disable_cache=False, all_cookies=True) -> Requ
         custom_abort(-3, '账号密码不能为空')
     if name.strip() != name:
         custom_abort(-3, '用户名包含空字符')
+    # 临时禁用
+    disable_cache = True
     if not disable_cache:
         cookie_pickle = redis_session.get("cookie" + name)
         if cookie_pickle:
-            cookies = pickle.loads(cookie_pickle)
+            cookies: RequestsCookieJar = pickle.loads(cookie_pickle)
             r = session.get(config.test_url, allow_redirects=False, cookies=cookies)
             if r.status_code == 200:
+                cookies.update(r.cookies)
                 if all_cookies:
+                    if ".222.31.49.139" in cookies.keys():
+                        cookies.clear(".222.31.49.139")
                     _, cookies = follow_link(cookies, "http://222.31.49.139/jwglxt/xtgl/index_initMenu.html")
                 redis_session.set("cookie" + name, pickle.dumps(cookies), ex=43200)
                 return cookies
@@ -53,7 +56,9 @@ def login(name: str, passwd: str, disable_cache=False, all_cookies=True) -> Requ
         '_eventId': 'submit',
         'execution': execution,
         'username': name,
-        'password': js_ctx.call('fuck', public_key_dict["exponent"], public_key_dict["modulus"], passwd)
+        'password': requests.get(
+            "http://tencent-gz.dreace.top:29365/?exponent={}&modulus={}&password={}&uuid=549b6332-c15e-45b2-bc11-34464f1c7dbb"
+            .format(public_key_dict["exponent"], public_key_dict["modulus"], passwd)).content.decode()
     }
     login_response = session.post(config.index_url, allow_redirects=False, data=post_data, cookies=cookies)
     # 跟随一些列 302 跳转，并更新 cookies

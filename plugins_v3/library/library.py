@@ -12,11 +12,10 @@ from utils.decorators.check_sign import check_sign
 from utils.decorators.need_proxy import need_proxy
 from utils.decorators.request_limit import request_limit
 from utils.exceptions import custom_abort
+from utils.session import session
 from utils.gol import global_values
 from . import api, config
 
-session = requests.session()
-session.verify = False
 
 requests.packages.urllib3.disable_warnings()
 
@@ -29,10 +28,9 @@ requests.packages.urllib3.disable_warnings()
 def handle_library_search_by_name(keyword: str):
     book_type = request.args.get('type', '正题名')
     page = request.args.get('page', '1')
-    url = 'http://222-31-39-3-8080-p.vpn.nuc1941.top:8118//pft/wxjs/bk_s_Q_fillpage.asp?q=%s=[[*%s*]]' \
-          '&nmaxcount=&nSetPageSize=10&orderby=&Research=1&page=%s&opt=1' % (quote(book_type), quote(keyword), page)
-    content = session.get(url, headers={'Cookie': global_values.get_value('vpn_cookie')}).content.decode(
-        'utf-8')
+    url = 'http://222.31.39.3:8080/pft/wxjs/bk_s_Q_fillpage.asp?q=%s=[[*%s*]]' \
+          '&nmaxcount=&nSetPageSize=10&orderby=&Research=1&page=%s&opt=1' % (quote(book_type), keyword, page)
+    content = session.get(url).content.decode('utf-8')
     re_book_ids = re.findall(r"ShowItem\('([0-9]*)'\)", content)
     records_group = re.search('共([0-9]*)条记录', content)
     if not records_group:
@@ -64,10 +62,9 @@ def handle_library_search_by_isbn(isbn: str):
         isbn = isbn[:1] + '-' + isbn[1:5] + '-' + isbn[5:9] + '-' + isbn[9:]
     else:
         isbn = isbn[:3] + '-' + isbn[3:4] + '-' + isbn[4:8] + '-' + isbn[8:12] + '-' + isbn[12:]
-    url = 'http://222-31-39-3-8080-p.vpn.nuc1941.top:8118//pft/wxjs/bk_s_Q_fillpage.asp?q=标准编号=[[%s*]]' \
+    url = 'http://222.31.39.3:8080/pft/showmarc/table.asp?q=标准编号=[[%s*]]' \
           '&nmaxcount=&nSetPageSize=10&orderby=&Research=1&page=%s&opt=1' % (quote(isbn), page)
-    content = session.get(url, headers={'Cookie': global_values.get_value('vpn_cookie')}).content.decode(
-        'utf-8')
+    content = session.get(url).content.decode('utf-8')
     re_book_ids = re.findall(r"ShowItem\('([0-9]*)'\)", content)
     records_group = re.search('共([0-9]*)条记录', content)
     if not records_group:
@@ -92,9 +89,8 @@ def handle_library_search_by_isbn(isbn: str):
 @need_proxy()
 @cache(set())
 def get_book_available_detail(book_id: str):
-    url = "http://222-31-39-3-8080-p.vpn.nuc1941.top:8118//pft/showmarc/showbookitems.asp?nTmpKzh=%s" % book_id
-    content = session.get(url, headers={'Cookie': global_values.get_value('vpn_cookie')}).content.decode(
-        "utf-8")
+    url = "http://222.31.39.3:8080/pft/showmarc/showbookitems.asp?nTmpKzh=%s" % book_id
+    content = session.get(url).content.decode("utf-8")
     soups = bs4.BeautifulSoup(content, "html.parser")
     trs = soups.find_all("tr")
     detail_items = []
@@ -113,11 +109,11 @@ def get_book_available_detail(book_id: str):
 
 
 def book_detail(book_id) -> dict:
-    url = "http://222-31-39-3-8080-p.vpn.nuc1941.top:8118//pft/showmarc/table.asp?nTmpKzh=%s" % book_id
-    content = session.get(url, headers={'Cookie': global_values.get_value('vpn_cookie')}).content
+    url = "http://222.31.39.3:8080/pft/showmarc/table.asp?nTmpKzh=%s" % book_id
+    content = session.get(url).content
     soups = bs4.BeautifulSoup(content, "html.parser")
     details = soups.find(id="tabs-2").find_all("tr")
-    url = "http://222-31-39-3-8080-p.vpn.nuc1941.top:8118//pft/wxjs/BK_getKJFBS.asp"
+    url = "http://222.31.39.3:8080/pft/wxjs/BK_getKJFBS.asp"
     post_data = {"nkzh": book_id}
     content = session.post(url, data=post_data,
                            headers={'Cookie': global_values.get_value('vpn_cookie')}).content.decode()

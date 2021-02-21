@@ -15,16 +15,16 @@ from utils.exceptions import custom_abort
 from utils.session import session
 from . import api, config
 
-# credentials = pika.PlainCredentials(global_config.rabbitmq['username'], global_config.rabbitmq['password'])
-# connection = pika.BlockingConnection(
-#     pika.ConnectionParameters(
-#         heartbeat=0,
-#         host=global_config.rabbitmq['host'],
-#         port=global_config.rabbitmq['port'],
-#         credentials=credentials
-#     ))
-# channel = connection.channel()
-# channel.queue_declare(queue='grade', durable=True)
+credentials = pika.PlainCredentials(global_config.rabbitmq['username'], global_config.rabbitmq['password'])
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        heartbeat=0,
+        host=global_config.rabbitmq['host'],
+        port=global_config.rabbitmq['port'],
+        credentials=credentials
+    ))
+channel = connection.channel()
+channel.queue_declare(queue='grade', durable=True)
 
 
 @api.route('/grade', methods=['GET'])
@@ -103,7 +103,7 @@ def handle_grade():
 
 
 @api.route('/grade/async', methods=['GET'])
-@stopped()
+# @stopped()
 @check_sign({'name', 'passwd', 'openID'})
 @request_limit()
 def handle_grade_async():

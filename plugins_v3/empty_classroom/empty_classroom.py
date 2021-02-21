@@ -20,7 +20,7 @@ def handle_empty_classroom(building_id: str, week_of_term: int, day_of_week: int
     post_data = {
         "fwzt": "cx",  # 查询
         "xnm": "2020",  # 学年
-        "xqm": "3",
+        "xqm": "12",
         "lh": building_id,  # 楼号
         "jyfs": "0",  # 教育方式？？？
         "zcd": 2 ** (week_of_term - 1),  # zcd = 2**周次-1
@@ -62,7 +62,7 @@ def handle_filter_empty_classroom(building_id: str, week_of_term: int, day_of_we
     post_data = {
         "fwzt": "cx",  # 查询
         "xnm": "2020",  # 学年
-        "xqm": "3",
+        "xqm": "12",
         "lh": building_id,  # 楼号
         "jyfs": "0",  # 教育方式？？？
         "zcd": 1 << (week_of_term - 1),  # zcd = 2**周次-1

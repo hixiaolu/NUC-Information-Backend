@@ -19,7 +19,7 @@ def handle_exam():
     passwd = request.args.get('passwd', '')
     cookies = login(name, passwd)
     post_data = {
-        'xqm': 3,
+        'xqm': 12,
         'xnm': 2020,
         'queryModel.showCount': 500
     }
